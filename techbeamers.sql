@@ -248,5 +248,184 @@ SELECT * FROM dbo.Worker_Clone
 
 --Q-31. Write An SQL Query To Show The Current Date And Time.
 SELECT GETDATE()
+SELECT SYSDATETIME()
+SELECT CURRENT_TIMESTAMP
+SELECT SYSUTCDATETIME()
 
---
+--Q-32. Write An SQL Query To Show The Top N (Say 6) Records Of A Table.
+SELECT TOP 6 *
+FROM dbo.Worker
+
+SELECT *
+FROM dbo.Worker
+ORDER BY WORKER_ID
+OFFSET 0 ROWS FETCH NEXT 6 ROWS ONLY
+
+--Q-33. Write An SQL Query To Determine The Nth (Say N=5) Highest Salary From A Table.
+SELECT SALARY 
+FROM (
+	SELECT *, DENSE_RANK() OVER(ORDER BY SALARY DESC) rownum
+	FROM dbo.Worker
+) as result
+WHERE rownum = 5
+
+SELECT TOP 1 SALARY
+FROM (
+	SELECT DISTINCT TOP 5 SALARY FROM dbo.Worker ORDER BY SALARY DESC
+) as result
+ORDER BY SALARY ASC
+
+SELECT DISTINCT SALARY 
+FROM dbo.Worker 
+ORDER BY SALARY DESC
+OFFSET 4 ROWS FETCH NEXT 1 ROW ONLY
+
+--Q-34. Write An SQL Query To Determine The 5th Highest Salary Without Using TOP Or Limit Method.
+SELECT SALARY
+FROM dbo.Worker L
+WHERE 5 = (
+	SELECT  COUNT (DISTINCT SALARY)
+	FROM dbo.Worker R
+	WHERE R.SALARY >= L.SALARY
+)
+
+--Q-35. Write An SQL Query To Fetch The List Of Employees With The Same Salary.
+SELECT w1.*
+FROM dbo.Worker w1
+JOIN dbo.Worker w2
+ON w1.SALARY = w2.SALARY
+WHERE w1.WORKER_ID <> w2.WORKER_ID
+
+--Q-36. Write An SQL Query To Show The Second Highest Salary From A Table.
+SELECT TOP 1 SALARY
+FROM (
+	SELECT DISTINCT TOP 2 SALARY FROM dbo.Worker ORDER BY SALARY DESC
+) as result
+ORDER BY SALARY ASC
+
+SELECT MAX(SALARY)
+FROM dbo.Worker
+WHERE SALARY NOT IN (
+	SELECT MAX(SALARY) FROM dbo.Worker
+)
+
+--Q-37. Write An SQL Query To Show One Row Twice In Results From A Table.
+SELECT * FROM dbo.Worker
+UNION ALL
+SELECT * FROM dbo.Worker
+
+--Q-38. Write An SQL Query To Fetch Intersecting Records Of Two Tables.
+SELECT * FROM dbo.Worker
+INTERSECT
+SELECT * FROM dbo.Worker_Clone
+
+--Q-39. Write An SQL Query To Fetch The First 50% Records From A Table.
+SELECT TOP 50 PERCENT *
+FROM dbo.Worker
+
+SELECT * FROM dbo.Worker
+WHERE WORKER_ID <= (
+	SELECT COUNT(WORKER_ID) / 2 FROM dbo.Worker
+)
+
+--Q-40. Write An SQL Query To Fetch The Departments That Have Less Than Four People In It.
+SELECT DEPARTMENT, COUNT(WORKER_ID) NoOfPeople
+FROM dbo.Worker
+GROUP BY DEPARTMENT
+HAVING COUNT(DEPARTMENT) < 4
+
+--Q-41. Write An SQL Query To Show All Departments Along With The Number Of People In There.
+SELECT DEPARTMENT, COUNT(WORKER_ID) NoOfPeople
+FROM dbo.Worker
+GROUP BY DEPARTMENT
+
+--Q-42. Write An SQL Query To Show The Last Record From A Table.
+SELECT TOP 1 * FROM dbo.Worker ORDER BY WORKER_ID DESC
+
+SELECT *
+FROM dbo.Worker
+WHERE WORKER_ID = (
+	SELECT MAX(WORKER_ID) FROM dbo.Worker
+)
+
+--Q-43. Write An SQL Query To Fetch The First Row Of A Table.
+SELECT TOP 1 * FROM dbo.Worker ORDER BY WORKER_ID ASC
+
+SELECT *
+FROM dbo.Worker
+WHERE WORKER_ID = (
+	SELECT MIN(WORKER_ID) FROM dbo.Worker
+)
+
+--Q-44. Write An SQL Query To Fetch The Last Five Records From A Table.
+SELECT TOP 5 *
+FROM dbo.Worker
+ORDER BY WORKER_ID DESC
+
+--Q-45. Write An SQL Query To Print The Name Of Employees Having The Highest Salary In Each Department.
+SELECT FIRST_NAME, DEPARTMENT, SALARY
+FROM
+(
+	SELECT *,
+	DENSE_RANK() OVER(partition by DEPARTMENT order by SALARY desc) salaryorder
+	FROM dbo.Worker
+) as result
+WHERE salaryorder = 1
+
+SELECT FIRST_NAME, w1.DEPARTMENT, SALARY
+FROM dbo.Worker w1
+JOIN (SELECT DEPARTMENT, MAX(SALARY) maxsalary FROM dbo.Worker GROUP BY DEPARTMENT) as w2
+ON w1.DEPARTMENT = w2.DEPARTMENT
+AND w1.SALARY = W2.maxsalary
+
+--Write An SQL Query To Fetch Three Max Salaries From A Table.
+SELECT DISTINCT TOP 3 SALARY
+FROM dbo.Worker
+ORDER BY SALARY DESC
+
+SELECT DISTINCT SALARY 
+FROM dbo.Worker a 
+WHERE 3 >= (
+	SELECT COUNT(DISTINCT SALARY) 
+	FROM dbo.Worker b 
+	WHERE a.SALARY <= b.SALARY
+) 
+ORDER BY a.SALARY DESC
+
+--Q-47. Write An SQL Query To Fetch Three Min Salaries From A Table.
+SELECT DISTINCT TOP 3 SALARY
+FROM dbo.Worker
+ORDER BY SALARY ASC
+
+SELECT DISTINCT SALARY 
+FROM dbo.Worker a 
+WHERE 3 >= (
+	SELECT COUNT(DISTINCT SALARY) 
+	FROM dbo.Worker b 
+	WHERE a.SALARY >= b.SALARY
+) 
+ORDER BY a.SALARY ASC
+
+--Q-48. Write An SQL Query To Fetch Nth Max Salaries From A Table.
+DECLARE @n INT = 4
+
+SELECT DISTINCT SALARY 
+FROM dbo.Worker a 
+WHERE @n >= (
+	SELECT COUNT(DISTINCT SALARY) 
+	FROM dbo.Worker b 
+	WHERE a.SALARY <= b.SALARY
+) 
+ORDER BY a.SALARY DESC
+
+--Q-49. Write An SQL Query To Fetch Departments Along With The Total Salaries Paid For Each Of Them.
+SELECT DEPARTMENT, SUM(SALARY) Total_Salary_Paid
+FROM dbo.Worker
+GROUP BY DEPARTMENT
+
+--Q-50. Write An SQL Query To Fetch The Names Of Workers Who Earn The Highest Salary.
+SELECT FIRST_NAME, SALARY
+FROM dbo.Worker WHERE SALARY = (
+	SELECT MAX(SALARY) FROM dbo.Worker
+)
+
